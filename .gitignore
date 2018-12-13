@@ -1,3 +1,7 @@
+*~
+golang-ci-template
+*zip
+*.out
 *.exe
 *.mp3
 *.vtt
