@@ -1,5 +1,6 @@
 *~
 golang-ci-template
+dist/*
 *zip
 *.out
 *.exe
