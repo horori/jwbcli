@@ -9,3 +9,32 @@ The process goes something like this:
 * Select one of latest videos
 * Select resolution (240p, 360p, 480p and 720p)
 * Select subtitle language
+
+## Installation
+
+[Download](https://github.com/horori/jwbcli/releases) latest release for your environment.
+
+- Mac (darwin_amd64)
+- Linux (linux_amd64)
+- Windows (windows_amd64)
+
+For ARM (e.g. Raspberry Pi) or 32bit OS, use this source code and compile.
+
+```
+env GOOS=linux GOARCH=arm GOARM=5 go build
+```
+
+Extract `.tar.gz` file or `.zip` and execute.
+
+### Linux example
+
+Please replace the latest download URL
+```
+sudo curl -o /usr/local/bin/jwbcli -L <URL for tar.gz>
+sudo chmod +x /usr/local/bin/jwbcli
+```
+
+### Windows example
+
+Extract the zip and put jwbcli.exe in a folder (e.g. desktop)
+MP4 and VTT file will be downloaded to the same folder.
