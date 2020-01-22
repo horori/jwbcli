@@ -24,8 +24,8 @@ func IntStdin() (int, error) {
 	return strconv.Atoi(strings.TrimSpace(stringInput))
 }
 
-// ChooseNom - standard input & return num
-func ChooseNom(def int) int {
+// ChooseNumber - standard input & return num
+func ChooseNumber(def int) int {
 	nom, err := IntStdin()
 	if err != nil {
 		return def
