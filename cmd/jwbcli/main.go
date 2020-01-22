@@ -6,14 +6,17 @@ import (
 	"os"
 	"strings"
 
-	"./lib"
-	//		"unsafe"
+	"github.com/horori/jwbcli/pkg/clihelper"
+	"github.com/horori/jwbcli/pkg/downloader"
+	"github.com/horori/jwbcli/pkg/jwapi"
+	"github.com/horori/jwbcli/pkg/vlc"
+	"github.com/horori/jwbcli/pkg/vtt"
 )
 
 func main() {
 
 	// Load English Latest Videos
-	dataE, err := lib.ParseLatestVideo("E")
+	dataE, err := jwapi.ParseLatestVideo("E")
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -33,11 +36,11 @@ func main() {
 
 	// Select Media
 	fmt.Printf("Choose media number : ")
-	mediaNumber := lib.ChooseNom(0)
+	mediaNumber := clihelper.ChooseNom(0)
 
 	for mediaNumber >= mediacnt {
 		fmt.Printf("Number is wrong! Choose video media again : ")
-		mediaNumber = lib.ChooseNom(0)
+		mediaNumber = clihelper.ChooseNom(0)
 	}
 
 	naturalKey := dataE.Category.Media[mediaNumber].LanguageAgnosticNaturalKey
@@ -45,17 +48,17 @@ func main() {
 
 	// input quality.
 	fmt.Printf("[ 0 ] 240p [ 1 ] 360p [ 2 ] 480p (default) [ 3 ] 720p : ")
-	quaNum := lib.ChooseNom(2)
+	quaNum := clihelper.ChooseNom(2)
 
 	fmt.Println("Available Language: ", strings.Join(dataE.Category.Media[mediaNumber].AvailableLanguages, ", "))
 
 	// input subtitle language
 	fmt.Printf("For subtitle select one of available language (eg. English=E, Japanese=J, German=X) : ")
-	subTitleLang := lib.StrStdin()
+	subTitleLang := clihelper.StrStdin()
 
 	// Search VTT file
 	// Load Latest Videos
-	dataJ, err := lib.ParseLatestVideo(subTitleLang)
+	dataJ, err := jwapi.ParseLatestVideo(subTitleLang)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -72,14 +75,14 @@ func main() {
 	} else {
 
 		// Download Language VTT
-		if err := lib.HTTPDownload(vttURL, naturalKey+".VTT"); err != nil {
+		if err := downloader.HTTPDownload(vttURL, naturalKey+".VTT"); err != nil {
 			log.Fatal(err)
 			os.Exit(1)
 		}
 		fmt.Println(naturalKey + ".VTT is saved as the subtitle file.")
 
 		// Convert to Text
-		if err := lib.VttToText(naturalKey + ".VTT"); err != nil {
+		if err := vtt.VttToText(naturalKey + ".VTT"); err != nil {
 			log.Fatal("Failed to convert Japanese VTT file to Text...")
 		} else {
 			fmt.Println(naturalKey + ".TXT is saved as the text file.")
@@ -87,14 +90,14 @@ func main() {
 
 		// Download English VTT
 		vttURL = dataE.Category.Media[mediaNumber].Files[0].Subtitles.URL
-		if err := lib.HTTPDownload(vttURL, naturalKey+"_E.VTT"); err != nil {
+		if err := downloader.HTTPDownload(vttURL, naturalKey+"_E.VTT"); err != nil {
 			log.Fatal(err)
 			os.Exit(1)
 		}
 		fmt.Println(naturalKey + "_E.VTT is saved as the subtitle file.")
 
 		// Convert to Text
-		if err := lib.VttToText(naturalKey + "_E.VTT"); err != nil {
+		if err := vtt.VttToText(naturalKey + "_E.VTT"); err != nil {
 			log.Fatal("Failed to convert English VTT file to Text...")
 		} else {
 			fmt.Println(naturalKey + "_E.TXT is saved as the text file.")
@@ -111,19 +114,19 @@ func main() {
 
 	// Download Video
 	fmt.Println("Videofile downloading...")
-	if err := lib.HTTPDownload(videoURL, naturalKey+".MP4"); err != nil {
+	if err := downloader.HTTPDownload(videoURL, naturalKey+".MP4"); err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
 	// Play Now
 	fmt.Printf("Play with VLC? [ 0 ] Yes (default) [ 1 ] No : ")
-	ans := lib.ChooseNom(0)
+	ans := clihelper.ChooseNom(0)
 	if ans == 0 {
 		if vttURL == "" {
-			lib.PlayNow(naturalKey+".MP4", "")
+			vlc.PlayNow(naturalKey+".MP4", "")
 		} else {
-			lib.PlayNow(naturalKey+".MP4", naturalKey+".VTT")
+			vlc.PlayNow(naturalKey+".MP4", naturalKey+".VTT")
 		}
 	}
 }

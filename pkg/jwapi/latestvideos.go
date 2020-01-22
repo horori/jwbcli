@@ -1,4 +1,4 @@
-package lib
+package jwapi
 
 import (
 	"encoding/json"
