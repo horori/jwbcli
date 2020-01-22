@@ -1,5 +1,7 @@
 package main
 
-func TestJwbcli() {
+import "testing"
+
+func TestJwbcli(t *testing.T) {
 	main()
 }

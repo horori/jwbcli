@@ -16,60 +16,52 @@ import (
 func main() {
 
 	// Load English Latest Videos
-	dataE, err := jwapi.ParseLatestVideo("E")
+	dataE, err := jwapi.GetLatestVideo("E")
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
-	// Leatest VideoCnt (English)
-	mediacnt := dataE.Pagination.TotalCount
-	if mediacnt > 20 {
-		mediacnt = 20
+	// Show Menu (max 20)
+	m := jwapi.GetLatestVideoTitles(dataE, 20)
+	for i := 0; i < len(m); i++ {
+		fmt.Println("[", i, "]", m[i])
 	}
-	fmt.Println("LatestVideos :", mediacnt)
-
-	// Show Menu
-	for i := 0; i < mediacnt; i++ {
-		fmt.Println("[", i, "]", dataE.Category.Media[i].Title)
-	}
+	fmt.Printf("Select one of available video : ")
 
 	// Select Media
-	fmt.Printf("Choose media number : ")
-	mediaNumber := clihelper.ChooseNom(0)
-
-	for mediaNumber >= mediacnt {
+	var selectedNumber int
+	for {
+		selectedNumber = clihelper.ChooseNumber(0)
+		if selectedNumber < len(m) {
+			break
+		}
 		fmt.Printf("Number is wrong! Choose video media again : ")
-		mediaNumber = clihelper.ChooseNom(0)
 	}
 
-	naturalKey := dataE.Category.Media[mediaNumber].LanguageAgnosticNaturalKey
-	fmt.Println("No", mediaNumber, dataE.Category.Media[mediaNumber].Title, naturalKey, " is selected.")
+	naturalKey := jwapi.GetNaturalKey(dataE, selectedNumber)
+	fmt.Println("No", selectedNumber, m[selectedNumber], naturalKey, " is selected.")
 
 	// input quality.
-	fmt.Printf("[ 0 ] 240p [ 1 ] 360p [ 2 ] 480p (default) [ 3 ] 720p : ")
-	quaNum := clihelper.ChooseNom(2)
+	resolutionMap := jwapi.GetAvailableResolution(dataE, selectedNumber)
+	for i := 0; i < len(resolutionMap); i++ {
+		fmt.Println("[", i, "]", resolutionMap[i])
+	}
+	fmt.Printf("Select one of available resolution : ")
+	resolutionNumber := clihelper.ChooseNumber(2)
 
-	fmt.Println("Available Language: ", strings.Join(dataE.Category.Media[mediaNumber].AvailableLanguages, ", "))
+	fmt.Println("Available Language: ", strings.Join(jwapi.GetAvailableLanguage(dataE, selectedNumber), ", "))
 
 	// input subtitle language
 	fmt.Printf("For subtitle select one of available language (eg. English=E, Japanese=J, German=X) : ")
-	subTitleLang := clihelper.StrStdin()
+	selectedLanguage := clihelper.StrStdin()
 
-	// Search VTT file
-	// Load Latest Videos
-	dataJ, err := jwapi.ParseLatestVideo(subTitleLang)
+	// Search VTT file in the selected languarge
+	vttURL, err := jwapi.GetVttURLByNaturalKey(naturalKey, selectedLanguage)
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
-	vttURL := ""
-	for i := 0; i < dataJ.Pagination.TotalCount; i++ {
-		if dataJ.Category.Media[i].LanguageAgnosticNaturalKey == naturalKey {
-			vttURL = dataJ.Category.Media[i].Files[0].Subtitles.URL
-			break
-		}
-	}
+
 	if vttURL == "" {
 		fmt.Println("No Textdata!")
 	} else {
@@ -79,17 +71,21 @@ func main() {
 			log.Fatal(err)
 			os.Exit(1)
 		}
-		fmt.Println(naturalKey + ".VTT is saved as the subtitle file.")
+		fmt.Println(naturalKey + ".VTT is saved as " + selectedLanguage + " subtitle file.")
 
 		// Convert to Text
 		if err := vtt.VttToText(naturalKey + ".VTT"); err != nil {
-			log.Fatal("Failed to convert Japanese VTT file to Text...")
+			log.Fatal("Failed to convert " + selectedLanguage + " VTT file to Text...")
 		} else {
-			fmt.Println(naturalKey + ".TXT is saved as the text file.")
+			fmt.Println(naturalKey + ".TXT is saved as " + selectedLanguage + " text file.")
 		}
 
 		// Download English VTT
-		vttURL = dataE.Category.Media[mediaNumber].Files[0].Subtitles.URL
+		vttURL, err := jwapi.GetVttURLByNaturalKey(naturalKey, "E")
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("Download " + vttURL)
 		if err := downloader.HTTPDownload(vttURL, naturalKey+"_E.VTT"); err != nil {
 			log.Fatal(err)
 			os.Exit(1)
@@ -106,7 +102,7 @@ func main() {
 	}
 
 	// Find Video URL
-	videoURL := dataE.Category.Media[mediaNumber].Files[quaNum].ProgressiveDownloadURL
+	videoURL := jwapi.GetVideoDownloadURL(dataE, selectedNumber, resolutionNumber)
 	if videoURL == "" {
 		log.Fatal("No video data for this resolution!")
 		os.Exit(1)
@@ -121,7 +117,7 @@ func main() {
 
 	// Play Now
 	fmt.Printf("Play with VLC? [ 0 ] Yes (default) [ 1 ] No : ")
-	ans := clihelper.ChooseNom(0)
+	ans := clihelper.ChooseNumber(0)
 	if ans == 0 {
 		if vttURL == "" {
 			vlc.PlayNow(naturalKey+".MP4", "")

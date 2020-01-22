@@ -130,8 +130,8 @@ type LatestVideos struct {
 	} `json:"pagination"`
 }
 
-// ParseLatestVideo Return LatestVideo object
-func ParseLatestVideo(language string) (data *LatestVideos, err error) {
+// GetLatestVideo Return LatestVideo object
+func GetLatestVideo(language string) (data *LatestVideos, err error) {
 
 	httpResponse, err := http.Get("https://data.jw-api.org/mediator/v1/categories/" + language + "/LatestVideos?detailed=1&clientType=tvjworg")
 	if err != nil {
@@ -146,6 +146,62 @@ func ParseLatestVideo(language string) (data *LatestVideos, err error) {
 	data = new(LatestVideos)
 	if err := json.Unmarshal(jsonString, data); err != nil {
 		log.Fatal(err)
+	}
+	return
+}
+
+// GetLatestVideoTitles returns titles of the latestVideo
+func GetLatestVideoTitles(data *LatestVideos, max int) map[int]string {
+	mediacnt := data.Pagination.TotalCount
+	if mediacnt > max {
+		mediacnt = max
+	}
+	m := map[int]string{}
+	for i := 0; i < mediacnt; i++ {
+		m[i] = data.Category.Media[i].Title
+	}
+	return m
+}
+
+// GetNaturalKey returns LanguageAgnosticNaturalKey
+func GetNaturalKey(data *LatestVideos, id int) string {
+	return data.Category.Media[id].LanguageAgnosticNaturalKey
+}
+
+// GetAvailableResolution returns available resolutions
+func GetAvailableResolution(data *LatestVideos, id int) map[int]string {
+	m := map[int]string{}
+	for i := 0; i < len(data.Category.Media[id].Files); i++ {
+		m[i] = data.Category.Media[id].Files[i].Label
+	}
+	return m
+}
+
+// GetAvailableLanguage returns available languages
+func GetAvailableLanguage(data *LatestVideos, id int) []string {
+	return data.Category.Media[id].AvailableLanguages
+}
+
+// GetVideoDownloadURL returns URL
+func GetVideoDownloadURL(data *LatestVideos, id int, resolutionNumber int) string {
+	return data.Category.Media[id].Files[resolutionNumber].ProgressiveDownloadURL
+}
+
+// GetVttURLByNaturalKey returns VTT url based on the naturalKey
+func GetVttURLByNaturalKey(naturalKey string, languageCode string) (vttURL string, err error) {
+	data, err := GetLatestVideo(languageCode)
+	if err != nil {
+		return
+	}
+	for i := 0; i < data.Pagination.TotalCount; i++ {
+		if data.Category.Media[i].LanguageAgnosticNaturalKey == naturalKey {
+			for j := 0; j < len(data.Category.Media[i].Files); j++ {
+				vttURL = data.Category.Media[i].Files[j].Subtitles.URL
+				if vttURL != "" {
+					break
+				}
+			}
+		}
 	}
 	return
 }

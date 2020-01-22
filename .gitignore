@@ -6,5 +6,8 @@ dist/*
 *.exe
 *.mp3
 *.vtt
+*.VTT
 *.mp4
+*.MP4
 *.txt
+*.TXT
