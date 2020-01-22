@@ -1,7 +1,7 @@
 # .goreleaser.yml
 # Build customization
 builds:
-  - main: main.go
+  - main: cmd/jwbcli/main.go
     binary: jwbcli
     goos:
       - windows
