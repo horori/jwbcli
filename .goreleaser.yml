@@ -1,5 +1,8 @@
 # .goreleaser.yml
 # Build customization
+before:
+  hooks:
+  - go mod tidy
 builds:
   - main: cmd/jwbcli/main.go
     binary: jwbcli

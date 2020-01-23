@@ -39,3 +39,22 @@ sudo chmod +x /usr/local/bin/jwbcli
 
 Extract the zip and put jwbcli.exe in a folder (e.g. desktop)
 MP4 and VTT file will be downloaded to the same folder.
+
+## Contributing
+
+### Test
+
+### Release
+
+A new tag push will trigger github action based on `.github/main.yml` and it will call `goreleaser`
+
+```shell
+git tag v0.2.3
+git push origin --tags
+```
+
+To test release without publishing to github.
+
+```shell
+goreleaser --snapshot --skip-publish --rm-dist
+```
