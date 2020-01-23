@@ -1,7 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestJwbcli(t *testing.T) {
-	main()
 }
