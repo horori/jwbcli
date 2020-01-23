@@ -2,7 +2,7 @@
 # Build customization
 before:
   hooks:
-  - go mod tidy
+  - go get -u ./...
 builds:
   - main: cmd/jwbcli/main.go
     binary: jwbcli
