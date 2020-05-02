@@ -16,8 +16,8 @@ func FileExists(name string) bool {
 // PlayNow play video file with VLC
 func PlayNow(videoFile string, vttFile string) (err error) {
 	vlcpath := "vlc"
-
-	switch osName := runtime.GOOS; osName {
+	osName := runtime.GOOS
+	switch osName {
 	case "windows":
 		// Play on VLC
 		vlcpath = os.Getenv("ProgramFiles(x86)") + "\\VideoLAN\\VLC\\vlc.exe"
@@ -36,11 +36,14 @@ func PlayNow(videoFile string, vttFile string) (err error) {
 		fmt.Printf("%s.\n", osName)
 		return
 	}
-
-	if vttFile != "" {
-		err = exec.Command(vlcpath, videoFile, "--sub-file="+vttFile).Start()
+	if videoFile != "test.mp4" {
+		if vttFile != "" {
+			err = exec.Command(vlcpath, videoFile, "--sub-file="+vttFile).Start()
+		} else {
+			err = exec.Command(vlcpath, videoFile).Start()
+		}
 	} else {
-		err = exec.Command(vlcpath, videoFile).Start()
+		fmt.Printf("This is test OS: %s -> %s %s\n", osName, vlcpath, videoFile)
 	}
 	return
 }
