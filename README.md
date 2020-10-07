@@ -1,4 +1,4 @@
-# JWBCli
+# A command line tool to download latest videos and subtitles
 
 CLI tool which enables you to download one of latest videos and a different language subtitles files.
 You can play the videos on VLC with English audio and own language subtitle. (e.g. English audio + Japanese subtitles)
